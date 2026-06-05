@@ -1,5 +1,11 @@
 #!/usr/bin/env python
+#
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#
+# RUN WITH:
+#
+# ./predict_results.py --config-file ./configs/CASARPN_RM_R_50_FPN_1x.yaml --input /tmp/test --output /tmp/out-test --opts MODEL.WEIGHTS /mnt/raid1/repos/DeepWindows/output/model_final.pth
+
 import argparse
 import torch
 import glob
