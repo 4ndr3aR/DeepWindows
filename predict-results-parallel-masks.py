@@ -320,3 +320,4 @@ if __name__ == "__main__":
                 cv2.imshow(WINDOW_NAME, mask_rgb[:, :, ::-1])
                 if cv2.waitKey(0) == 27:
                     break  # esc to quit
+        print(f'Done in {time.time() - start_time:.2f}s')
