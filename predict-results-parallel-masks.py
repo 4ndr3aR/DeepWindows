@@ -19,6 +19,9 @@ import cv2
 import numpy as np
 import torch
 import tqdm
+
+from pathlib import Path
+
 from detectron2.config import get_cfg
 from detectron2.data.detection_utils import read_image
 from detectron2.utils.logger import setup_logger
@@ -185,7 +188,7 @@ def process_image(path, cfg, output_path, multiple_inputs, prediction_color):
     predictions, _visualized_output = demo.run_on_image(img)
 
     out_filename = output_filename_for(path, output_path, multiple_inputs)
-    out_fn_prefix= str(fn).replace(fn.suffix,'')
+    out_fn_prefix= out_filename.replace(Path(out_filename).suffix,'')
 
     mask_rgb     = instances_to_mask_image(
         predictions, img.shape, prediction_color=prediction_color, image_path=path
