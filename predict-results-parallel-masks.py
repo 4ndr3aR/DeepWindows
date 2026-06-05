@@ -1,5 +1,11 @@
 #!/usr/bin/env python
+#
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+#
+# RUN WITH:
+#
+# ./predict-results-parallel-masks.py --config-file ./configs/CASARPN_RM_R_50_FPN_1x.yaml --input /mnt/raid1/dataset/urban/elaborati-rilievo-fotografico-jpg/F --output /mnt/raid1/dataset/urban/elaborati-rilievo-fotografico-jpg-F-deepwindows-inference-wholeimage-v2 --max-threads 4 --prediction-color "255,255,255" --opts MODEL.WEIGHTS /mnt/raid1/repos/DeepWindows/output/model_final.pth
+
 import argparse
 import concurrent.futures
 import glob
@@ -163,24 +169,35 @@ def output_filename_for(input_path, output_path, multiple_inputs):
 
     return output_path
 
+def overlay(frame, mask, alpha=0.5):
+        if len(mask.shape) < 3 or mask.shape[2] == 1:
+                mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        if mask.shape != frame.shape:
+                print(f'mask.shape != frame.shape: {mask.shape} != {frame.shape}')
+                mask = cv2.resize(mask, (frame.shape[1], frame.shape[0]), interpolation=cv2.INTER_NEAREST)
+        return cv2.addWeighted(frame, 1, mask, alpha, 0)
 
 def process_image(path, cfg, output_path, multiple_inputs, prediction_color):
-    img = read_image(path, format="BGR")
-    start_time = time.time()
+    img          = read_image(path, format="BGR")
+    start_time   = time.time()
 
-    demo = get_demo(cfg)
+    demo         = get_demo(cfg)
     predictions, _visualized_output = demo.run_on_image(img)
 
-    mask_rgb = instances_to_mask_image(
+    out_filename = output_filename_for(path, output_path, multiple_inputs)
+    out_fn_prefix= str(fn).replace(fn.suffix,'')
+
+    mask_rgb     = instances_to_mask_image(
         predictions, img.shape, prediction_color=prediction_color, image_path=path
     )
-    out_filename = output_filename_for(path, output_path, multiple_inputs)
+    overlayed    = overlay(img, mask_rgb)
 
     if out_filename:
         # cv2.imwrite expects BGR; mask_rgb is easier for users to reason about.
-        cv2.imwrite(out_filename, mask_rgb[:, :, ::-1])
+        cv2.imwrite(out_fn_prefix+'-mask.png', mask_rgb[:, :, ::-1])
+        cv2.imwrite(out_fn_prefix+'-overlay.jpg', overlayed)
 
-    elapsed = time.time() - start_time
+    elapsed     = time.time() - start_time
     num_instances = len(predictions["instances"]) if "instances" in predictions else 0
     return path, out_filename, num_instances, elapsed
 
