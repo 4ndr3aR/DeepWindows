@@ -1,12 +1,14 @@
 _BASE_: "./Base-RCNN-FPN.yaml"
 MODEL:
 #  WEIGHTS: "detectron2://ImageNetPretrained/MSRA/R-50.pkl"
-  WEIGHTS: "/home/sun/MyProjects/R-50.pkl"
+#  WEIGHTS: "/home/sun/MyProjects/R-50.pkl"
+  WEIGHTS: "/mnt/raid1/repos/maskdino/pretrained-models/R-50.pkl"
   MASK_ON: True
   RESNETS:
     DEPTH: 50
   PROPOSAL_GENERATOR:
     NAME: "RPN"
+    GAM_TOPK: False
   RPN:
     HEAD_NAME: "CASA_RPNHead"
   ROI_HEADS:

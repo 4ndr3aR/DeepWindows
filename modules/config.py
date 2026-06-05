@@ -11,3 +11,4 @@ def add_deepwindows_network_config(cfg):
     cfg.MODEL.ROI_BOX_HEAD.GEOMETRIC_FEATURE = True
     cfg.MODEL.ROI_BOX_HEAD.NUM_RELATIONS = 32
     cfg.MODEL.ROI_BOX_HEAD.NUM_RM = [1,1]
+    cfg.MODEL.PROPOSAL_GENERATOR.GAM_TOPK = False

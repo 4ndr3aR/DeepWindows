@@ -99,8 +99,9 @@ def register_dataset():
     metadata = {'thing_classes': ['window'], }
 
     # dataset path, change to your own path
-    TRAIN_PATH = '/home/sun/facades_datasets/ALL/train'
-    VAL_PATH = '/home/sun/facades_datasets/ALL/val'
+    DATASET_BASE_PATH = '/mnt/raid1/dataset/urban/DeepWindows'
+    TRAIN_PATH = f'{DATASET_BASE_PATH}/train'
+    VAL_PATH = f'{DATASET_BASE_PATH}/val'
 
     register_coco_instances("CMP_TRAIN", metadata,
                             os.path.join(TRAIN_PATH, 'Window_CMP_XML_TRAIN.json'),
