@@ -109,7 +109,7 @@ def get_demo(cfg):
         _thread_local.demo = VisualizationDemo(cfg)
     return _thread_local.demo
 
-
+'''
 def list_input_images(input_path):
     if os.path.isdir(input_path):
         paths = [
@@ -124,7 +124,32 @@ def list_input_images(input_path):
 
     assert paths, f"No input images found for: {input_path}"
     return paths
+'''
 
+def list_input_images(input_path, recurse=False):
+    path = Path(input_path).expanduser()
+
+    if path.is_dir():
+        # Directory: scan for image files, optionally descending into subdirs
+        candidates = path.rglob('*') if recurse else path.iterdir()
+        paths = sorted(
+            str(p) for p in candidates
+            if p.is_file() and p.suffix.lower() in _IMAGE_EXTENSIONS
+        )
+    else:
+        # Treat as a glob pattern (or a direct file path)
+        anchor = path.anchor or '.'
+        relative = str(path)[len(path.anchor):]
+        paths = sorted(
+            str(p) for p in Path(anchor).glob(relative)
+            if p.is_file()
+        )
+        # Fallback for filenames containing glob metacharacters (e.g. `foo[1].png`)
+        if not paths and path.is_file():
+            paths = [str(path)]
+
+    assert paths, f"No input images found for: {input_path}"
+    return paths
 
 def random_color_for_instance(image_path, instance_index):
     """Return a stable random-looking RGB color for this image/instance."""
@@ -182,7 +207,6 @@ def overlay(frame, mask, alpha=0.5):
 
 def process_image(path, cfg, output_path, multiple_inputs, prediction_color):
     img          = read_image(path, format="BGR")
-    start_time   = time.time()
 
     demo         = get_demo(cfg)
     predictions, _visualized_output = demo.run_on_image(img)
@@ -214,6 +238,7 @@ def get_parser():
         help="path to config file",
     )
     parser.add_argument("--webcam", action="store_true", help="Take inputs from webcam.")
+    parser.add_argument("--recurse", action="store_true", help="Find image files in subdirectories as well.")
     parser.add_argument("--video-input", help="Path to video file.")
     parser.add_argument(
         "--input",
@@ -266,7 +291,9 @@ if __name__ == "__main__":
     register_dataset()
 
     if args.input:
-        input_paths = list_input_images(args.input)
+        start_time  = time.time()
+        input_paths = list_input_images(args.input, args.recurse)
+
         multiple_inputs = len(input_paths) > 1
         if args.output and multiple_inputs:
             os.makedirs(args.output, exist_ok=True)
